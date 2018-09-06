@@ -1,2 +1,2 @@
 # STA303
-Coursework
+Methods of Data Analysis Coursework
