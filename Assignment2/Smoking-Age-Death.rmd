@@ -1,0 +1,79 @@
+---
+title: "Smoking, Age and Death"
+author: "Kevin Dang"
+geometry: margin=1in
+output:
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+- \usepackage{fontspec}
+- \setmainfont{Times New Roman}
+fontsize: 12pt
+---
+
+```{r load-packages, echo =FALSE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+
+```
+
+Smoking is a major health concern among the population, however many individuals of numerous age groups continue to smoke. The goal is to analyze potential relationships between age group, smoking status and mortality rate among women.
+Looking at potential relationships, the first *table*[^6] shows that a greater proportion of smokers in the study were alive after 20 years than non-smokers. In addition, the *binomial regression model*[^7] for mortality against smoking shows a significant negative relationship between the variables, which indicates that smoking decreases mortality rate. This is unexpected, but another factor (age) has not been taken into account, which could explain this unusual relationship. Also, the residual deviance is quite large compared to its degrees of freedom, so this model is not a good fit.
+To investigate this unintuitive relationship, a second *table*[^8] was created to show the relationship between smoking and age in groups of `dead` or `alive`. In this table, there is a larger proportion of younger women who smoke, relative to older women who smoke. Many of these younger women who smoke were still alive after 20 years into the study, while many of the older women passed away.
+Another *binomial regression model*[^9] is fit to the data, this time containing age groups as a predictor. This model is a very strong fit since the residual deviance is quite small relative to its degrees of freedom. Now that `age` has been accounted for, the `smoker` variable is positively correlated with mortality; this is an example of Simpson's paradox. The dependence of smoking status and mortality rate are explained by their respective relationship with age (i.e. smoking and mortality are dependent, conditional on age). 
+If investigators in this study did not measure age, they may have incorrectly concluded that smoking correlates with a lower risk of death. In observational studies such as this one, investigators need to be careful in drawing conclusions before considering other factors that can influence relationships between the variables of interest.
+
+[^6]: Appendix B, Table 1
+[^7]: Appendix B, Binomial Regression 1
+[^8]: Appendix B, Table 2
+[^9]: Appendix B, Binomial Regression 2
+
+\newpage
+
+# Appendix B
+## Smoking Data
+```{r smoking-1, echo=FALSE, message=FALSE, warning=FALSE}
+
+library(SMPracticals)
+data(smoking)
+
+smoking_tbl <- as_data_frame(smoking)
+dplyr::glimpse(smoking_tbl)
+
+```
+
+### Table 1
+```{r smoking-2, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Relationship between mortality and smoking
+xtabs(cbind(dead,alive) ~ smoker,data=smoking_tbl) %>% prop.table(1)
+
+```
+
+### Binomial Regression 1
+```{r smoking-3, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Binomial regression, mortality against smoking
+smoking_glm1 <- glm(cbind(dead,alive) ~ smoker, data = smoking_tbl, family = binomial)
+summary(smoking_glm1)
+
+```
+
+### Table 2
+```{r smoking-4, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Relationship between smoking and age in two groups: dead or alive.
+xtabs(cbind(dead,alive) ~ smoker + age,data=smoking_tbl) %>% prop.table(2)
+
+```
+
+
+### Binomial Regression 2
+```{r smoking-5, echo=FALSE, message=FALSE, warning=FALSE}
+
+# Binomial regression, mortality against age and smoking
+smoking_glm2 <- glm(cbind(dead,alive) ~ age + smoker, data = smoking_tbl, family = binomial)
+summary(smoking_glm2)
+
+```
+
