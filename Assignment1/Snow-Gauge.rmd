@@ -1,48 +1,40 @@
 ---
 title: "Calibrating a Snow Gauge"
-author: "Kevin Dang"
 geometry: margin=1in
 output:
-  pdf_document:
-    latex_engine: xelatex
+  html_document:
+    df_print: paged
 header-includes:
 - \usepackage{fontspec}
 - \setmainfont{Times New Roman}
 fontsize: 12pt
 ---
 
-```{r load-packages, echo =FALSE, message=FALSE, warning=FALSE}
-
-library(tidyverse)
-
-```
-
 Snow gauges are used to indirectly measure the density of snow; a high snow density leads to less absorption of water. Analyzing this information is important because we want to monitor water levels and prevent floods from occurring. My analysis involves specifying the relationship between `density` of polyethylene blocks (a substitute for snow) and `gain` -- an amplified version of gamma photon count.
 From the *Density vs Gain*[^1] plot, it appears as though there is an inverse exponential relationship between the variables. A linear model was initially created, however the *standardized residuals*[^2] appear to follow a distinct pattern, so a standard linear model cannot directly be fit to the data. A *box-cox transformation*[^3] was done on the `gain` variable, and the plot shows that a value of $\lambda$ = 0.02020202 is the best power transformation; in this case, a log transformation is appropriate.
 After completing a log transformation on the `gain` variable, a valid linear model for *Density vs log(Gain)*[^4] was produced since the new *Residuals vs Fitted Values*[^5] plot does not show a distinct pattern. Also, the *Normal QQ plot*[^6] on the transformed data does not show evidence of skew -- the normality condition is met. The *regression output*[^7] shows a significant relationship between `log(Gain)` and `density`, as the p-value is extremely small. In addition, the multiple R-squared value of 0.9958 provides further evidence that this model is appropriate.
 The linear model is: mean `density` = 1.298013 g/cm^3^ - (0.216203 g/cm^3^ * `log(gain)`). This model can be used to estimate the mean `density` of snow at a particular value of `gain` since the snow gauge has been calibrated, but we must proceed with caution because polyethylene blocks were used in place of snow blocks for the model.
 
-[^1]: Appendix A, Density vs Gain (Gauge data)
-[^2]: Appendix A, Residuals vs Fitted Values (Normal linear model for Gauge data)
-[^3]: Appendix A, Box-Cox Transformation
-[^4]: Appendix A, Density vs log(Gain) (Transformed log model for Gauge data)
-[^5]: Appendix A, Residuals vs Fitted Values (Transformed log model for Gauge data)
-[^6]: Appendix A, Normal QQ plot (Transformed log model for Gauge data)
-[^7]: Appendix A, Gauge Regression
+[^1]: Density vs Gain
+[^2]: Residuals vs Fitted Values (Normal linear model)
+[^3]: Box-Cox Transformation
+[^4]: Density vs log(Gain) (Transformed log model)
+[^5]: Residuals vs Fitted Values (Transformed log model)
+[^6]: Normal QQ plot (Transformed log model)
+[^7]: Gauge Regression
 
-\newpage
 
-# Appendix A
 ##Snow Gauge Data
-```{r snow-gauge-1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=3.2, fig.height=3.2}
+```{r snow-gauge-1, message=FALSE, warning=FALSE}
+library(tidyverse)
 
+# Load data
 gauge <- readr::read_table("https://www.stat.berkeley.edu/~statlabs/data/gauge.data",col_types = "dd")
 
 gauge <- gauge[rowSums(is.na(gauge)) != ncol(gauge),]
 
 glimpse(gauge)
 
-# Code from lecture 1
 # Plot density vs gain
 gauge %>%
   ggplot(aes(x=gain, y=density)) + 
@@ -53,7 +45,6 @@ gauge %>%
        x="Gain",
        y="Density"~(g/cm^{3}))
 
-# Code from Lecture 5
 # Residuals
 gauge_lm1 <- lm(density~gain, data=gauge)
 data_frame(resid = residuals(gauge_lm1),
@@ -73,16 +64,15 @@ data_frame(resid = residuals(gauge_lm1),
 ```
 
 #### Box-Cox Transformation
-```{r, box-cox-gauge, echo=FALSE, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+```{r, box-cox-gauge, message=FALSE, warning=FALSE}
 
-# Code from lecture 3
 #Box-Cox transformation
 library(MASS)
 
 gain_boxcox <- boxcox(gain ~ 1,data=gauge)
 gain_boxcox$x[which(gain_boxcox$y == max(gain_boxcox$y))]
 
-# Code from lecture 3
+
 #Log transformation
 gauge_transform <- gauge %>%
   mutate(log_gain = log(gain))
@@ -90,9 +80,8 @@ gauge_transform <- gauge %>%
 ```
 
 
-```{r snow-gauge-2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=3.2, fig.height=3.2}
+```{r snow-gauge-2, message=FALSE, warning=FALSE}
 
-# Code from lecture 3
 # Plot density vs log(gain)
 gauge_transform %>%
   ggplot(aes(x=log_gain, y=density)) + 
@@ -104,7 +93,6 @@ gauge_transform %>%
        x="log(Gain)",
        y="Density"~(g/cm^{3}))
 
-# Code from Lecture 5
 # Residuals
 gauge_lm2 <- lm(density ~ log_gain, data=gauge_transform)
 data_frame(resid = residuals(gauge_lm2),
@@ -121,7 +109,6 @@ data_frame(resid = residuals(gauge_lm2),
        x = "Fitted Values",
        y = "Residuals")
 
-#Code from lecture 3
 # Normal Q-Q
 gauge_transform %>%
   mutate_at("log_gain", funs((. - mean(.)) / sd(.))) %>%
@@ -138,10 +125,9 @@ gauge_transform %>%
 
 ```
 
-\newpage
 
 ### Gauge Regression
-```{r, gauge-regression, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, gauge-regression, message=FALSE, warning=FALSE}
 
 summary(gauge_lm2)
 

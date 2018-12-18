@@ -1,46 +1,38 @@
 ---
 title: "Dungeness Crab Growth"
-author: "Kevin Dang"
 geometry: margin=1in
 output:
-  pdf_document:
-    latex_engine: xelatex
+  html_document:
+    df_print: paged
 header-includes:
 - \usepackage{fontspec}
 - \setmainfont{Times New Roman}
 fontsize: 12pt
 ---
 
-```{r load-packages, echo =FALSE, message=FALSE, warning=FALSE}
-
-library(tidyverse)
-
-```
-
 As Dungeness crabs grow, they need to replace their carapace; a process referred to as molting. My analysis involves grouping the adult female Dungeness crabs by whether they recently molted or not, estimating the mean carapace size of both groups, then determining whether there is a significant difference between the groups.
 First, a *boxplot*[^8] of the shell size (`size`) by the shell type (`shell`) was created. Shell type 0 represents a fouled carapace which can be interpreted as an old shell, while shell type 1 represents a clean carapace -- a recently molted shell. The boxplot shows that older shells contain some outliers, while recent shells have no outliers. From the *summary statistics*[^9], type 0 shells are larger than type 1 shells by 7mm on average. 
 A *two sample t-test*[^10] yielded a statistically significant p-value; this indicates that the means of the 2 groups are not equivalent. The two sample groups are independent,since the traps that were used were designed to catch adult female Dungeness crabs of all sizes, meaning that this sample is representative of the population. An *F-test to compare two variances*[^11] shows that the two sample group variances are similar -- the constant variance condition is met. Both the *Normal QQ Plot*[^12] and *Histogram of Shell Size*[^13] show skew in the data, which may be a problem. Fortunately, the sample size of 362 (161 type 0, 201 type 1) is sufficiently large. By the Central Limit Theorem, means of samples from a population approach a normal distribution as sample size increases -- regardless of the population distribution. Thus, the normality condition for the t-test is met.
 Given the strong supporting evidence, adult female Dungeness crabs with older carapaces (shell type 0) on average have larger shells than those with recently molted carapaces (shell type 1).
 
-[^8]: Appendix B, Boxplot of shell size by type (Crab data)
-[^9]: Appendix B, Summary Statistics
-[^10]: Appendix B, Two Sample t-test
-[^11]: Appendix B, F test to compare two variances
-[^12]: Appendix B, Normal QQ plot (Crab data)
-[^13]: Appendix B, Histogram of Shell Size (Crab data)
+[^8]: Boxplot of shell size by type
+[^9]: Summary Statistics
+[^10]: Two Sample t-test
+[^11]: F test to compare two variances
+[^12]: Normal QQ plot
+[^13]: Histogram of Shell Size
 
 
-\newpage
 
-# Appendix B
 ## Crab Growth Data
-```{r, crab-1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=3.2, fig.height=3.2}
+```{r, crab-1, message=FALSE, warning=FALSE}
+library(tidyverse)
 
+# Load data
 crab <- readr::read_table("https://www.stat.berkeley.edu/users/statlabs/data/crabpop.data",col_types = "dc")
 
 glimpse(crab)
 
-# Code from lecture 2
 #Boxplot
 crab %>%
   ggplot(aes(x=shell, y=size)) +
@@ -51,7 +43,6 @@ crab %>%
        x = "Shell Type",
        y = "Shell Size"~(mm))
 
-# Code from lecture 3
 #Normal QQ
 crab %>%
   mutate_at("size",funs( (. - mean(.)) / sd(.))) %>%
@@ -66,7 +57,6 @@ crab %>%
        x = "Theoretical Quantiles",
        y = "Sample Quantiles")
 
-# Code from lecture 3
 # Histogram
 crab %>%
   ggplot(aes(x = size)) +
@@ -81,9 +71,8 @@ crab %>%
 ```
 
 ### Summary Statistics
-```{r, crab-sum-1, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, crab-sum-1, message=FALSE, warning=FALSE}
 
-# Code from Lecture 3
 group_means <- crab %>%
   group_by(shell) %>%
   summarize(group_mean = mean(size),
@@ -95,7 +84,7 @@ group_means
 ```
 
 ### Two Sample t-test
-```{r, crab-test-2, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, crab-test-2, message=FALSE, warning=FALSE}
 
 t_test <- t.test(size ~ shell, data = crab, var.equal = TRUE)
 t_test
@@ -103,7 +92,7 @@ t_test
 ```
 
 ### F test to compare two variances
-```{r, crab-test-1, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, crab-test-1, message=FALSE, warning=FALSE}
 
 f_test <- var.test(size ~ shell, data = crab)
 f_test
