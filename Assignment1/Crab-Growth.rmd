@@ -13,6 +13,7 @@ fontsize: 12pt
 As Dungeness crabs grow, they need to replace their carapace; a process referred to as molting. My analysis involves grouping the adult female Dungeness crabs by whether they recently molted or not, estimating the mean carapace size of both groups, then determining whether there is a significant difference between the groups.
 
 Let's load the crab growth data.
+
 ```{r, crab-1, message=FALSE, warning=FALSE}
 library(tidyverse)
 
@@ -67,6 +68,7 @@ f_test
 The *two sample t-test* yielded a statistically significant p-value; this indicates that the means of the 2 groups are not equivalent. The two sample groups are independent, since the traps that were used were designed to catch adult female Dungeness crabs of all sizes, meaning that this sample is representative of the population. An *F-test to compare two variances* shows that the two sample group variances are similar -- the constant variance condition is met.
 
 Let's check for normality:
+
 ```{r, plot-2, message=FALSE, warning=FALSE}
 #Normal QQ
 crab %>%

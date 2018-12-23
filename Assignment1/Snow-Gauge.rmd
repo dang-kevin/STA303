@@ -13,6 +13,7 @@ fontsize: 12pt
 Snow gauges are used to indirectly measure the density of snow; a high snow density leads to less absorption of water. Analyzing this information is important because we want to monitor water levels and prevent floods from occurring. My analysis involves specifying the relationship between `density` of polyethylene blocks (a substitute for snow) and `gain` -- an amplified version of gamma photon count.
 
 Let's load the tidyverse package and the snow gauge data.
+
 ```{r gauge-1, message=FALSE, warning=FALSE}
 library(tidyverse)
 
@@ -25,6 +26,7 @@ glimpse(gauge)
 ```
 
 Let's plot the data and residuals.
+
 ```{r plots-1, message=FALSE, warning=FALSE}
 # Plot density vs gain
 gauge %>%
@@ -129,4 +131,4 @@ summary(gauge_lm2)
 
 The *regression output* shows a significant relationship between `log(Gain)` and `density`, as the p-value is extremely small. In addition, the multiple R-squared value of 0.9958 provides further evidence that this model is appropriate.
 
-The linear model is: mean `density` = 1.298013 g/cm^3^ - (0.216203 g/cm^3^ * `log(gain)`). This model can be used to estimate the mean `density` of snow at a particular value of `gain` since the snow gauge has now been calibrated, but we must proceed with caution because polyethylene blocks were used in place of snow blocks for the model, and there are some differences between the substances that could affect the outcome.
+The linear model is: mean `density` = 1.298013 g/cm^3^ - (0.216203 g/cm^3^ * `log(gain)`). This model can be used to estimate the mean `density` of snow at a particular value of `gain` since the snow gauge has now been calibrated, but we must proceed with caution because polyethylene blocks were used in place of snow blocks for the model.
