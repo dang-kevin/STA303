@@ -1,6 +1,5 @@
 ---
 title: "Nodal Involvement in Prostate Cancer"
-author: "Kevin Dang"
 geometry: margin=1in
 output:
   html_document:
@@ -11,21 +10,10 @@ header-includes:
 fontsize: 12pt
 ---
 
-When deciding on how to treat prostate cancer, physicians use a cancer staging system which takes into account the presence of cancer in the surrounding lymph nodes, referred to as nodal involvement. My analysis involves determining whether prostate cancer has spread to the lymph nodes based on certain characteristics. 
-Starting with the *Nodal Involvement by Predictor*[^1] graph, it is difficult to tell whether any of the five characteristics are successful in predicting nodal involvement. Upon closer inspection, it appears as though `stage`, `acid` and `xray` have more true positive and true negative data points than false positive and false negative data points, which means that they may have a higher success rate when predicting nodal involvement.
-An initial *binary logistic regression model*[^2] shows that `acid` and `xray` are considered somewhat significant, `stage` is close to the standard significance level of 0.05, while `age` and `grade` are not close to the significance level at all. 
-To explore the potentially significant predictors further, a second *binary logistic regression model*[^3] was fit, with nodal involvement ("`r`") as the response and `stage`, `acid` and `xray` as the predictors. The *analysis of deviance table*[^4] for the second model shows a significant reduction in the residual deviance as each of the three variables are added to the null model.
-In regards to the model assumptions, the values are discrete (0 or 1) and there are also no outliers in the data since the z-value for each predictor is under 3. Also, there is low intercorrelation among the predictors, as shown in the *correlation matrix*[^5].
-To clarify what each predictor represents, `stage` is a measure of the size and position of the tumour, `xray` indicates how serious the cancer is from an X-ray reading, and `acid` represents the level of acid phosphatase in the blood serum. These three variables may be helpful indicators of nodal involvement in prostate cancer, from evidence provided by the model. However, physicians should proceed with caution as there are some observations which incorrectly predict nodal involvement.
+When deciding on how to treat prostate cancer, physicians use a cancer staging system which takes into account the presence of cancer in the surrounding lymph nodes, referred to as nodal involvement. My analysis involves determining whether prostate cancer has spread to the lymph nodes based on certain characteristics.
 
-[^1]: Nodal Involvement, by Predictor
-[^2]: Binary Logistic Regression Model 1
-[^3]: Binary Logistic Regression Model 2
-[^4]: Binary Logistic Regression Model 2, Analysis of Deviance Table
-[^5]: Correlation Matrix
+Let's load the data from the `SMPracticals` package:
 
-
-## Nodal Data
 ```{r nodal-1, message=FALSE, warning=FALSE}
 library(tidyverse)
 
@@ -37,6 +25,11 @@ data(nodal)
 nodal_tbl <- as_data_frame(nodal)
 dplyr::glimpse(nodal_tbl)
 
+```
+
+Starting with the *Nodal Involvement by Predictor* graph, it is difficult to tell whether any of the five characteristics are successful in predicting nodal involvement.
+
+```{r nodal-2, message=FALSE, warning=FALSE}
 # Nodal involvement by predictor
 nodal_tbl %>%
   gather(variable,value,aged:acid) %>%
@@ -52,8 +45,11 @@ nodal_tbl %>%
 
 ```
 
-### Binary Logistic Regression Model 1
-```{r nodal-2, message=FALSE, warning=FALSE}
+Upon closer inspection, it appears as though `stage`, `acid` and `xray` have more true positive and true negative data points than false positive and false negative data points, which means that they may have a higher success rate when predicting nodal involvement.
+
+Let's try fitting a model:
+
+```{r logreg-1, message=FALSE, warning=FALSE}
 
 # Fit an initial binary logistic regression model
 nodal_glm1 <- glm(r ~ aged + stage + grade + xray + acid,data = nodal_tbl,family = binomial)
@@ -61,8 +57,11 @@ summary(nodal_glm1)
 
 ```
 
-### Binary Logistic Regression Model 2
-```{r nodal-3, message=FALSE, warning=FALSE}
+An initial *binary logistic regression model* shows that `acid` and `xray` are considered somewhat significant, `stage` is close to the standard significance level of 0.05, while `age` and `grade` are not close to the significance level at all.
+
+To explore the potentially significant predictors further, let's fit a second *binary logistic regression model*, with nodal involvement (`r`) as the response and `stage`, `acid` and `xray` as the predictors. 
+
+```{r logreg-2, message=FALSE, warning=FALSE}
 
 # Try simpler binary logistic regression model
 nodal_glm2 <- glm(r ~ stage + xray + acid,data = nodal_tbl,family = binomial)
@@ -73,8 +72,9 @@ anova(nodal_glm2, test="Chisq")
 
 ```
 
-### Correlation Matrix
-```{r, nodal-4, message=FALSE, warning=FALSE}
+The *analysis of deviance table* for the second model shows a significant reduction in the residual deviance as each of the three variables are added to the null model.
+
+```{r, corrmat, message=FALSE, warning=FALSE}
 
 # Transform factor type into numeric type
 nodal_transform <- transform(nodal_tbl, aged = as.numeric(aged),
@@ -84,7 +84,12 @@ nodal_transform <- transform(nodal_tbl, aged = as.numeric(aged),
                                         acid = as.numeric(acid))
 # Correlation matrix
 round(cor(nodal_transform %>% dplyr::select(-c(m,r))),2)
+
+# We can visualize this better using corrplot
 corrplot::corrplot(cor(nodal_transform %>% dplyr::select(-c(m,r))),order="AOE")
 
 ```
 
+In regards to the model assumptions, the values are discrete (0 or 1) and there are also no outliers in the data since the z-value for each predictor is under 3. Also, there is low intercorrelation among the predictors, as shown in the *correlation matrix*.
+
+To clarify what each predictor represents, `stage` is a measure of the size and position of the tumour, `xray` indicates how serious the cancer is from an X-ray reading, and `acid` represents the level of acid phosphatase in the blood serum. These three variables may be helpful indicators of nodal involvement in prostate cancer, from evidence provided by the model. However, physicians should proceed with caution as there are some observations which incorrectly predict nodal involvement.
